@@ -12,21 +12,18 @@ DCEL buildDCEL(const vector<pair<int, int>>& verticesCoords, const vector<vector
 bool checkMesh(const vector<pair<int, int>>& verticesCoords, const vector<vector<int>>& faces, string& errorMessage) {
     // Verificar se a malha é aberta (alguma aresta é fronteira de somente uma face)
     if (isOpen(faces, errorMessage)) {
-        cout << "entrou1";
         errorMessage = "aberta";
         return false;
     }
     
     // Verificar se não é uma subdivisão planar (alguma aresta é fronteira de mais de duas faces)
     if (isNotPlanarSubdivision(faces, errorMessage)) {
-        cout << "entrou2";
         errorMessage = "não subdivisão planar";
         return false;
     }
     
     // Verificar se há sobreposições (alguma face tem auto-intersecção ou intersecta outras faces)
     if (isOverlapping(verticesCoords, faces, errorMessage)) {
-        cout << "entrou3";
         errorMessage = "sobreposta";
         return false;
     }
@@ -34,7 +31,6 @@ bool checkMesh(const vector<pair<int, int>>& verticesCoords, const vector<vector
     // Verificar se todas as faces estão em ordem anti-horária
     for (const auto& face : faces) {
         if (!isCounterClockwise(verticesCoords, face)) {
-            cout << "entrou4";
             errorMessage = "face " + to_string(&face - &faces[0] + 1) + " não está em ordem anti-horária";
             return false;
         }
@@ -114,7 +110,6 @@ int orientation(const pair<int, int>& p, const pair<int, int>& q, const pair<int
     int val = (q.second - p.second) * (r.first - q.first) -
               (q.first - p.first) * (r.second - q.second);
     
-    cout << "sentido: " << val << endl;
     if (val == 0) return 0;  // Colinear
     return (val > 0) ? 1 : 2; // Sentido horário ou anti-horário
 }
@@ -136,7 +131,6 @@ bool doSegmentsIntersect(const pair<int, int>& p1, const pair<int, int>& q1,
     
     // Caso geral: os segmentos se intersectam se as orientações são diferentes
     if (o1 != o2 && o3 != o4) {
-        cout << "entrou 4.1.1";
         return true;
     }
     
@@ -178,11 +172,11 @@ bool isOverlapping(const vector<pair<int, int>>& verticesCoords, const vector<ve
                 const auto& v4 = verticesCoords[face[j_next]];
                 
                 if (doSegmentsIntersect(v1, v2, v3, v4)) {
-                    cout << "entrou 3.1";
                     errorMessage = "Face " + to_string(faceIdx + 1) + 
                                    " tem auto-intersecção entre arestas (" + 
                                    to_string(face[i]) + "," + to_string(face[i_next]) + ") e (" + 
                                    to_string(face[j]) + "," + to_string(face[j_next]) + ")";
+                    cerr << errorMessage << endl;
                     return true;
                 }
             }
@@ -228,11 +222,6 @@ bool isOverlapping(const vector<pair<int, int>>& verticesCoords, const vector<ve
     return false;
 }
 
-// Função auxiliar para calcular o produto vetorial entre dois vetores
-double crossProduct(double x1, double y1, double x2, double y2) {
-    return x1 * y2 - y1 * x2;
-}
-
 // Função para calcular o produto vetorial entre três pontos (p1-p2) × (p3-p2)
 double crossProduct(const pair<int, int>& p1, const pair<int, int>& p2, const pair<int, int>& p3) {
     double x1 = p1.first - p2.first;  // Vetor p1-p2 (componente x)
@@ -240,7 +229,7 @@ double crossProduct(const pair<int, int>& p1, const pair<int, int>& p2, const pa
     double x2 = p3.first - p2.first;   // Vetor p3-p2 (componente x)
     double y2 = p3.second - p2.second; // Vetor p3-p2 (componente y)
     
-    return crossProduct(x1, y1, x2, y2);
+    return x1 * y2 - y1 * x2;
 }
 
 // Verifica se os vértices de uma face estão em ordem anti-horária
@@ -267,8 +256,8 @@ bool isCounterClockwise(const vector<pair<int, int>>& verticesCoords, const vect
         sum += crossProduct(v1, v2, v3);
     }
     
-    // Se a soma dos produtos vetoriais é positiva, a orientação é anti-horária
-    return sum > 0;
+    // Se a soma dos produtos vetoriais é negativa, a orientação é anti-horária
+    return sum <= 0;
 }
 
 // Funções para construção da DCEL
@@ -301,7 +290,7 @@ void debugPrintMesh(const vector<pair<int, int>>& verticesCoords, const vector<v
     
     // Mostra informações sobre os vértices
     cout << "Vértices (total: " << verticesCoords.size() - 1 << "):\n";
-    for (int i = 1; i < verticesCoords.size(); ++i) {
+    for (size_t i = 1; i < verticesCoords.size(); ++i) {
         cout << "  V" << i << ": (" << verticesCoords[i].first << ", " 
              << verticesCoords[i].second << ")\n";
     }

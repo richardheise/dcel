@@ -18,10 +18,10 @@ int main(int argc, char* argv[]) {
 
   int n, f;
   cin >> n >> f;
-  vector<pair<int, int>> vertices(n + 1); // índice 1-based
+  vector<pair<int, int>> vertices(n); // índice 1-based
 
   // Lê os vértices
-  for (int i = 1; i <= n; ++i) {
+  for (int i = 0; i < n; ++i) {
     int x, y;
     cin >> x >> y;
     vertices[i] = {x, y};
@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
 
   if (verbose) {
     cout << "Número de vértices: " << n << "\n";
-    for (int i = 1; i <= n; ++i) {
+    for (int i = 0; i < n; ++i) {
       cout << "Vértice " << i << ": (" << vertices[i].first << ", "
            << vertices[i].second << ")\n";
     }
@@ -61,18 +61,17 @@ int main(int argc, char* argv[]) {
     // Imprime detalhes da malha para debug
     debugPrintMesh(vertices, faces);
   }
-  
+
   // Verifica a validade da malha
   string errorMessage;
   bool isValid = checkMesh(vertices, faces, errorMessage);
   
-  cout << isValid;
-  return 0;
   if (!isValid) {
     // Se a malha não for válida, imprime a mensagem de erro e termina
     cout << errorMessage << endl;
     return 0;
   }
+  return 0;
   
   try {
     // Constrói a DCEL se a malha for válida
