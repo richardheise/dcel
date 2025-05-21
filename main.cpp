@@ -27,14 +27,6 @@ int main(int argc, char* argv[]) {
     vertices[i] = {x, y};
   }
 
-  if (verbose) {
-    cout << "Número de vértices: " << n << "\n";
-    for (int i = 0; i < n; ++i) {
-      cout << "Vértice " << i << ": (" << vertices[i].first << ", "
-           << vertices[i].second << ")\n";
-    }
-  }
-
   // Lê as faces
   vector<vector<int>> faces(f);
   for (int i = 0; i < f; ++i) {
@@ -44,21 +36,11 @@ int main(int argc, char* argv[]) {
     getline(cin >> ws, line); // Lê a linha inteira ignorando whitespace anterior
     istringstream iss(line);
     while (iss >> v) {
-      faces[i].push_back(v);
+      faces[i].push_back(v-1);
     }
   }
 
   if (verbose) {
-    cout << "Número de faces: " << f << "\n";
-    for (int i = 0; i < f; ++i) {
-      cout << "Face " << i + 1 << ":";
-      for (int idx : faces[i]) {
-        cout << " " << idx;
-      }
-      cout << "\n";
-    }
-    
-    // Imprime detalhes da malha para debug
     debugPrintMesh(vertices, faces);
   }
 
@@ -91,7 +73,6 @@ int main(int argc, char* argv[]) {
     if (verbose) {
       cout << "Erro ao construir DCEL: " << e.what() << endl;
     }
-    cout << "não subdivisão planar" << endl;
     return 1;
   }
 

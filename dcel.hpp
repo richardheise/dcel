@@ -113,8 +113,7 @@ DCEL buildDCEL(const vector<pair<int, int>>& verticesCoords, const vector<vector
 
 // Funções de verificação da malha
 bool checkMesh(const vector<pair<int, int>>& verticesCoords, const vector<vector<int>>& faces, string& errorMessage);
-bool isOpen(const vector<vector<int>>& faces, string& errorMessage);
-bool isNotPlanarSubdivision(const vector<vector<int>>& faces, string& errorMessage);
+int ValidateEdges(const vector<vector<int>>& faces, string& errorMessage);
 bool isOverlapping(const vector<pair<int, int>>& verticesCoords, const vector<vector<int>>& faces, string& errorMessage);
 bool isCounterClockwise(const vector<pair<int, int>>& verticesCoords, const vector<int>& faceVertices);
 
@@ -149,5 +148,15 @@ map<pair<int, int>, int> createEdgeToHalfEdgeMap(const DCEL& dcel);
 int getHalfEdgeIndex(const DCEL& dcel, const shared_ptr<HalfEdge>& halfEdge);
 int getVertexIndex(const DCEL& dcel, const shared_ptr<Vertex>& vertex);
 int getFaceIndex(const DCEL& dcel, const shared_ptr<Face>& face);
+
+bool checkOrientations(const vector<pair<int, int>> &verticesCoords,
+                       const vector<vector<int>> &faces, string &errorMessage);
+
+bool checkInside(const vector<pair<int, int>> &verticesCoords,
+                const vector<vector<int>> &faces,
+                string &errorMessage);
+
+bool isPointInsidePolygonStrict(const pair<int, int> &pt,
+                                const vector<pair<int, int>> &polygon);
 
 #endif // DCEL_HPP
