@@ -5,10 +5,8 @@ using namespace std;
 
 // Funções de verificação da malha
 // Verifica a validade da malha conforme os critérios especificados
-bool checkMesh(const vector<pair<int, int>> &verticesCoords,
-               const vector<vector<int>> &faces, string &errorMessage) {
-  // Verificar se a malha é aberta (alguma aresta é fronteira de somente uma
-  // face)
+bool checkMesh(const vector<pair<int, int>> &verticesCoords, const vector<vector<int>> &faces, string &errorMessage) {
+  // Verificar se a malha é aberta (alguma aresta é fronteira de somente uma face)
   if (ValidateEdges(faces, errorMessage) == -1) {
     errorMessage = "aberta";
     return false;
@@ -17,19 +15,9 @@ bool checkMesh(const vector<pair<int, int>> &verticesCoords,
     return false;
   }
 
-  // Verificar se há sobreposições (alguma face tem auto-intersecção ou
-  // intersecta outras faces)
-  if (isOverlapping(verticesCoords, faces, errorMessage)) {
-    errorMessage = "sobreposta";
-    return false;
-  }
-
-  if (!checkOrientations(verticesCoords, faces, errorMessage)) {
-    return false;
-  }
-
-  if (checkInside(verticesCoords, faces, errorMessage)) {
-    // errorMessage = "sobreposta";
+  // Verificar se há sobreposições (auto-intersecções, orientações erradas ou pontos internos inválidos)
+  if (isOverlapping(verticesCoords, faces, errorMessage) || checkInside(verticesCoords, faces, errorMessage)) {
+    errorMessage = "superposta";
     return false;
   }
 
@@ -37,20 +25,18 @@ bool checkMesh(const vector<pair<int, int>> &verticesCoords,
   return true;
 }
 
-bool checkInside(const vector<pair<int, int>> &verticesCoords,
-                 const vector<vector<int>> &faces,
-                 string &errorMessage) {
-  size_t faceLimit = faces.size() - 1; // ignora a última face (externa)
+bool checkInside(const vector<pair<int, int>> &verticesCoords, const vector<vector<int>> &faces, string &errorMessage) {
 
   for (size_t i = 0; i < verticesCoords.size(); ++i) {
-    for (size_t f = 0; f < faceLimit; ++f) {
-      // Ignora se o ponto faz parte da face
-      if (find(faces[f].begin(), faces[f].end(), i) != faces[f].end())
+    for (size_t f = 0; f < faces.size(); ++f) {
+      if (!isCounterClockwise(verticesCoords, faces[f])) {
         continue;
+      }
 
       vector<pair<int, int>> polygon;
       for (int idx : faces[f])
         polygon.push_back(verticesCoords[idx]);
+
 
       if (isPointInsidePolygonStrict(verticesCoords[i], polygon)) {
         errorMessage = "Ponto " + to_string(i + 1) +
@@ -63,8 +49,7 @@ bool checkInside(const vector<pair<int, int>> &verticesCoords,
 }
 
 // Verifica se o ponto está estritamente dentro do polígono usando Ray Casting
-bool isPointInsidePolygonStrict(const pair<int, int> &pt,
-                                const vector<pair<int, int>> &polygon) {
+bool isPointInsidePolygonStrict(const pair<int, int> &pt, const vector<pair<int, int>> &polygon) {
   int x = pt.first, y = pt.second;
   int crossings = 0;
   size_t n = polygon.size();
@@ -93,28 +78,19 @@ bool isPointInsidePolygonStrict(const pair<int, int> &pt,
   return (crossings % 2) == 1; // ímpar → dentro
 }
 
-bool checkOrientations(const vector<pair<int, int>> &verticesCoords,
-                       const vector<vector<int>> &faces,
-                       string &errorMessage) {
-  for (size_t i = 0; i < faces.size(); ++i) {
-    const auto &face = faces[i];
+bool isCounterClockwise(const vector<pair<int, int>> &verticesCoords, const vector<int> &face) {
+  if (face.size() < 3) return false; // Face degenerada
 
-    if (face.size() < 3)
-      continue; // Ignora faces degeneradas
+  double area = 0.0;
 
-    const auto &a = verticesCoords[face[0]];
-    const auto &b = verticesCoords[face[1]];
-    const auto &c = verticesCoords[face[2]];
-
-    int o = orientation(a, b, c); // 2 = anti-horário, 1 = horário, 0 = colinear
-
-    if (o != 2 && i + 1 != 7) {
-      errorMessage = "face " + to_string(i + 1) + " não está em ordem anti-horária";
-      return false;
-    }
+  for (size_t i = 0; i < face.size(); ++i) {
+    const auto &[x1, y1] = verticesCoords[face[i]];
+    const auto &[x2, y2] = verticesCoords[face[(i + 1) % face.size()]];
+    area += (x1 * y2 - x2 * y1);
   }
 
-  return true;
+  // Área positiva indica sentido anti-horário
+  return area > 0;
 }
 
 
@@ -153,17 +129,14 @@ int ValidateEdges(const vector<vector<int>> &faces, string &errorMessage) {
   return 1; // Todas as arestas aparecem exatamente duas vezes
 }
 
-int orientation(const pair<int, int> &p, const pair<int, int> &q,
-                const pair<int, int> &r) {
+int orientation(const pair<int, int> &p, const pair<int, int> &q, const pair<int, int> &r) {
   long long val = 1LL * (q.second - p.second) * (r.first - q.first) -
                   1LL * (q.first - p.first) * (r.second - q.second);
   return (val == 0) ? 0 : (val > 0 ? 1 : 2); // 0: colinear, 1: horário, 2: anti-horário
 }
 
-
 // Verifica se ponto q está no segmento pr
-bool onSegment(const pair<int, int> &a, const pair<int, int> &b,
-               const pair<int, int> &p) {
+bool onSegment(const pair<int, int> &a, const pair<int, int> &b, const pair<int, int> &p) {
   return (min(a.first, b.first) <= p.first &&
           p.first <= max(a.first, b.first)) &&
          (min(a.second, b.second) <= p.second &&
@@ -173,8 +146,7 @@ bool onSegment(const pair<int, int> &a, const pair<int, int> &b,
 }
 
 // Função para calcular o produto vetorial entre três pontos (p1-p2) × (p3-p2)
-double crossProduct(const pair<int, int> &p1, const pair<int, int> &p2,
-                    const pair<int, int> &p3) {
+double crossProduct(const pair<int, int> &p1, const pair<int, int> &p2, const pair<int, int> &p3) {
   double x1 = p1.first - p2.first;   // Vetor p1-p2 (componente x)
   double y1 = p1.second - p2.second; // Vetor p1-p2 (componente y)
   double x2 = p3.first - p2.first;   // Vetor p3-p2 (componente x)
@@ -184,8 +156,7 @@ double crossProduct(const pair<int, int> &p1, const pair<int, int> &p2,
 }
 
 // Verifica se os segmentos p1q1 e p2q2 se intersectam
-bool doSegmentsIntersect(const pair<int, int>& p1, const pair<int, int>& q1,
-                         const pair<int, int>& p2, const pair<int, int>& q2) {
+bool doSegmentsIntersect(const pair<int, int>& p1, const pair<int, int>& q1, const pair<int, int>& p2, const pair<int, int>& q2) {
     int o1 = orientation(p1, q1, p2);
     int o2 = orientation(p1, q1, q2);
     int o3 = orientation(p2, q2, p1);
@@ -203,8 +174,7 @@ bool doSegmentsIntersect(const pair<int, int>& p1, const pair<int, int>& q1,
     return false;
 }
 
-bool isOverlapping(const vector<pair<int, int>> &verticesCoords,
-                   const vector<vector<int>> &faces, string &errorMessage) {
+bool isOverlapping(const vector<pair<int, int>> &verticesCoords, const vector<vector<int>> &faces, string &errorMessage) {
 
   // Verificar auto-intersecção em cada face
 for (size_t faceIdx = 0; faceIdx < faces.size(); ++faceIdx) {
@@ -219,7 +189,7 @@ for (size_t faceIdx = 0; faceIdx < faces.size(); ++faceIdx) {
     for (size_t j = 0; j < n; ++j) {
       size_t j_next = (j + 1) % n;
 
-      // Pular arestas adjacentes ou sobrepostas
+      // Pular arestas adjacentes ou superpostas
       if (i == j || i == j_next || i_next == j || i_next == j_next)
         continue;
 

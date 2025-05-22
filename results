@@ -1,0 +1,56 @@
+Executando teste: tests/aberta1.in
+aberta
+-----------------------------
+Executando teste: tests/aberta2.in
+aberta
+-----------------------------
+Executando teste: tests/aberta3.in
+não subdivisão planar
+-----------------------------
+Executando teste: tests/aberta4.in
+aberta
+-----------------------------
+Executando teste: tests/aberta5.in
+aberta
+-----------------------------
+Executando teste: tests/correta1.in
+-----------------------------
+Executando teste: tests/correta2.in
+-----------------------------
+Executando teste: tests/correta3.in
+-----------------------------
+Executando teste: tests/correta4.in
+-----------------------------
+Executando teste: tests/correta5.in
+-----------------------------
+Executando teste: tests/default.in
+-----------------------------
+Executando teste: tests/n_sub_planar1.in
+não subdivisão planar
+-----------------------------
+Executando teste: tests/n_sub_planar2.in
+não subdivisão planar
+-----------------------------
+Executando teste: tests/n_sub_planar3.in
+não subdivisão planar
+-----------------------------
+Executando teste: tests/n_sub_planar4.in
+não subdivisão planar
+-----------------------------
+Executando teste: tests/n_sub_planar5.in
+não subdivisão planar
+-----------------------------
+Executando teste: tests/superposta1.in
+superposta
+-----------------------------
+Executando teste: tests/superposta2.in
+-----------------------------
+Executando teste: tests/superposta3.in
+superposta
+-----------------------------
+Executando teste: tests/superposta4.in
+-----------------------------
+Executando teste: tests/superposta5.in
+-----------------------------
+Executando teste: tests/superposta6.in
+-----------------------------
