@@ -1,10 +1,10 @@
 #!/bin/bash
 
 SCRIPT="printFigure.py"
-DIR="./"
+DIR="inputs/"
 
 # Cria o diretório de saída de imagens, se não existir
-mkdir -p imgs
+mkdir -p .. /imgs
 
 # Itera sobre os arquivos .in de forma segura
 while IFS= read -r -d '' input_file; do

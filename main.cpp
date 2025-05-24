@@ -53,20 +53,19 @@ int main(int argc, char* argv[]) {
     cout << errorMessage << endl;
     return 0;
   }
-  return 0;
-  
+
   try {
     // Constrói a DCEL se a malha for válida
-    DCEL dcel = buildDCEL(vertices, faces);
+    DCEL dcel;
+    dcel.buildFromMesh(vertices, faces);
     
     if (verbose) {
       cout << "\n=== DCEL construída com sucesso ===\n";
-      debugPrintDCEL(dcel);
+      // debugPrintDCEL(dcel);
     }
     
     // Gera a saída no formato requerido
-    string output = dcelToString(dcel);
-    cout << output;
+    dcel.printDCELOutput();
     
   } catch (const exception& e) {
     // Em caso de erro na construção da DCEL
@@ -75,5 +74,6 @@ int main(int argc, char* argv[]) {
     }
     return 1;
   }
-
+  
+  return 0;
 }
