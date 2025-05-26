@@ -1,4 +1,13 @@
-// dcel.hpp
+/***********************************************************************
+ *
+ * Autor: Richard Fernando Heise Ferreira
+ * Matrícula: 201900121214
+ * Data: 03/2025
+ * Instituição: Universidade Federal do Paraná
+ * Curso: Mestrado em Segurança da Computação - PPG-Inf
+ * Motivo: Trabalho 2 da disciplina de Geometria Computacional
+ *
+ ************************************************************************/
 #ifndef DCEL_HPP
 #define DCEL_HPP
 
@@ -67,7 +76,6 @@ public:
 class Face {
 public:
   shared_ptr<HalfEdge> outerComponent;
-  vector<shared_ptr<HalfEdge>> innerComponents;
 
   void print() const {
     cout << "Face: outerComponent starts at ";
@@ -76,7 +84,6 @@ public:
            << outerComponent->origin->y << ")";
     else
       cout << "NULL";
-    cout << ", with " << innerComponents.size() << " inner components." << endl;
   }
 };
 
@@ -285,15 +292,6 @@ int orientation(const pair<int, int> &p, const pair<int, int> &q, const pair<int
  * @return true se o ponto está no segmento, false caso contrário
  */
 bool onSegment(const pair<int, int> &a, const pair<int, int> &b, const pair<int, int> &p);
-
-/**
- * Calcula o produto vetorial entre três pontos
- * @param p1 Primeiro ponto
- * @param p2 Segundo ponto
- * @param p3 Terceiro ponto
- * @return Valor do produto vetorial (determinante)
- */
-double crossProduct(const pair<int, int> &p1, const pair<int, int> &p2, const pair<int, int> &p3);
 
 /**
  * Verifica se há sobreposição entre faces da malha

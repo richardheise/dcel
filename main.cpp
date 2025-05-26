@@ -1,4 +1,13 @@
-// main.cpp
+/***********************************************************************
+ *
+ * Autor: Richard Fernando Heise Ferreira
+ * Matrícula: 201900121214
+ * Data: 03/2025
+ * Instituição: Universidade Federal do Paraná
+ * Curso: Mestrado em Segurança da Computação - PPG-Inf
+ * Motivo: Trabalho 2 da disciplina de Geometria Computacional
+ *
+ ************************************************************************/
 #include "dcel.hpp"
 #include <iostream>
 #include <sstream>

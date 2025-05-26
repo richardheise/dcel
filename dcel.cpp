@@ -1,4 +1,13 @@
-// dcel.cpp
+/***********************************************************************
+ *
+ * Autor: Richard Fernando Heise Ferreira
+ * Matrícula: 201900121214
+ * Data: 03/2025
+ * Instituição: Universidade Federal do Paraná
+ * Curso: Mestrado em Segurança da Computação - PPG-Inf
+ * Motivo: Trabalho 2 da disciplina de Geometria Computacional
+ *
+ ************************************************************************/
 #include "dcel.hpp"
 
 using namespace std;
@@ -228,18 +237,6 @@ bool onSegment(const pair<int, int> &a, const pair<int, int> &b, const pair<int,
           p.second <= max(a.second, b.second)) &&
          ((b.first - a.first) * (p.second - a.second) ==
           (p.first - a.first) * (b.second - a.second)); // Produto vetorial == 0
-}
-
-// ======================================================================================================================= //
-
-// Função para calcular o produto vetorial entre três pontos (p1-p2) × (p3-p2)
-double crossProduct(const pair<int, int> &p1, const pair<int, int> &p2, const pair<int, int> &p3) {
-  double x1 = p1.first - p2.first;   // Vetor p1-p2 (componente x)
-  double y1 = p1.second - p2.second; // Vetor p1-p2 (componente y)
-  double x2 = p3.first - p2.first;   // Vetor p3-p2 (componente x)
-  double y2 = p3.second - p2.second; // Vetor p3-p2 (componente y)
-
-  return ((x1 * y2) - (y1 * x2));
 }
 
 // ======================================================================================================================= //
