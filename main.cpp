@@ -8,7 +8,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
   bool verbose = false;
-  // Verifica se -v foi passada como argumento
+  // Verifica se é modo verbose para debug
   for (int i = 1; i < argc; ++i) {
     if (string(argv[i]) == "-v") {
       verbose = true;
@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
 
   int n, f;
   cin >> n >> f;
-  vector<pair<int, int>> vertices(n); // índice 1-based
+  vector<pair<int, int>> vertices(n);
 
   // Lê os vértices
   for (int i = 0; i < n; ++i) {
@@ -51,18 +51,13 @@ int main(int argc, char* argv[]) {
   if (!isValid) {
     // Se a malha não for válida, imprime a mensagem de erro e termina
     cout << errorMessage << endl;
-    return 0;
+    return 1;
   }
 
   try {
-    // Constrói a DCEL se a malha for válida
+    // Constrói a DCEL, pois a malha é válida
     DCEL dcel;
     dcel.buildFromMesh(vertices, faces);
-    
-    if (verbose) {
-      cout << "\n=== DCEL construída com sucesso ===\n";
-      // debugPrintDCEL(dcel);
-    }
     
     // Gera a saída no formato requerido
     dcel.printDCELOutput();
@@ -70,7 +65,7 @@ int main(int argc, char* argv[]) {
   } catch (const exception& e) {
     // Em caso de erro na construção da DCEL
     if (verbose) {
-      cout << "Erro ao construir DCEL: " << e.what() << endl;
+      cerr << "Erro ao construir DCEL: " << e.what() << endl;
     }
     return 1;
   }

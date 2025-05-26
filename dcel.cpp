@@ -3,7 +3,8 @@
 
 using namespace std;
 
-// Funções de verificação da malha
+// ======================================================================================================================= //
+
 // Verifica a validade da malha conforme os critérios especificados
 bool checkMesh(const vector<pair<int, int>> &verticesCoords, const vector<vector<int>> &faces, string &errorMessage) {
   // Verificar se a malha é aberta (alguma aresta é fronteira de somente uma face)
@@ -25,6 +26,9 @@ bool checkMesh(const vector<pair<int, int>> &verticesCoords, const vector<vector
   return true;
 }
 
+// ======================================================================================================================= //
+
+// Verifica se um ponto está de um polígono válido a partir das faces
 bool checkInside(const vector<pair<int, int>> &verticesCoords, const vector<vector<int>> &faces, string &errorMessage) {
     
     // Para cada face 
@@ -68,6 +72,8 @@ bool checkInside(const vector<pair<int, int>> &verticesCoords, const vector<vect
     return false;
 }
 
+// ======================================================================================================================= //
+
 // Função auxiliar para verificar se ponto está na borda do polígono
 bool isPointOnPolygonBorder(const pair<int, int> &pt, const vector<pair<int, int>> &polygon) {
     int x = pt.first, y = pt.second;
@@ -85,14 +91,16 @@ bool isPointOnPolygonBorder(const pair<int, int> &pt, const vector<pair<int, int
         int det = (b.first - a.first) * (y - a.second) - (x - a.first) * (b.second - a.second);
         
         if (det == 0 && x >= minX && x <= maxX && y >= minY && y <= maxY) {
-            // Ponto está na borda (mas não é necessariamente um vértice)
+            // Ponto está na borda
             return true;
         }
     }
     return false;
 }
 
-// Verifica se o ponto está estritamente dentro do polígono (mantida igual, mas com prints)
+// ======================================================================================================================= //
+
+// Verifica se o ponto está estritamente dentro do polígono, sem contar borda, usando ray casting
 bool isPointInsidePolygon(const pair<int, int> &pt, const vector<pair<int, int>> &polygon) {
     int x = pt.first, y = pt.second;
     int crossings = 0;
@@ -115,88 +123,102 @@ bool isPointInsidePolygon(const pair<int, int> &pt, const vector<pair<int, int>>
     return inside;
 }
 
+// ======================================================================================================================= //
+
+// Função que valida se toda aresta passada na entrada possui uma "gêmea" para garantir malha fechada
+// Também verifica se não há mais de uma aresta sobre a outra, fazendo uma possível não subdivisão planar
 int ValidateEdges(const vector<vector<int>> &faces, string &errorMessage) {
-    // Contador de arestas direcionadas (incluindo múltiplas ocorrências)
-    map<pair<int, int>, vector<int>> edgeMap; // {aresta: [faces]}
-    
-    for (size_t face_idx = 0; face_idx < faces.size(); ++face_idx) {
-        const auto &face = faces[face_idx];
-        
-        for (size_t i = 0; i < face.size(); ++i) {
-            size_t j = (i + 1) % face.size();
-            int v1 = face[i];
-            int v2 = face[j];
-            auto edge = make_pair(v1, v2);
-            
-            edgeMap[edge].push_back(face_idx);
-        }
-    }
+  // Contador de arestas direcionadas (incluindo múltiplas ocorrências)
+  map<pair<int, int>, vector<int>> edgeMap; // {aresta: [faces]}
+  
+  for (size_t face_idx = 0; face_idx < faces.size(); ++face_idx) {
+      const auto &face = faces[face_idx];
+      
+      for (size_t i = 0; i < face.size(); ++i) {
+          size_t j = (i + 1) % face.size();
+          int v1 = face[i];
+          int v2 = face[j];
+          auto edge = make_pair(v1, v2);
+          
+          // Cria arestas a partir da entrada (ida)
+          edgeMap[edge].push_back(face_idx);
+      }
+  }
 
-    set<pair<int, int>> processedEdges;
-    bool openMesh = false;
-    bool nonPlanar = false;
+  set<pair<int, int>> processedEdges;
+  bool openMesh = false;
+  bool nonPlanar = false;
 
-    for (const auto &entry : edgeMap) {
-        auto edge = entry.first;
-        auto reverseEdge = make_pair(edge.second, edge.first);
+  for (const auto &entry : edgeMap) {
+      auto edge = entry.first;
 
-        // Pular se já processamos esse par
-        if (processedEdges.count(edge) || processedEdges.count(reverseEdge)) continue;
-        
-        // Verificar aresta inversa
-        if (!edgeMap.count(reverseEdge)) {
-            errorMessage = "Aresta (" + to_string(edge.first+1) + "," +
-                          to_string(edge.second+1) + ") não tem correspondente inversa";
-            openMesh = true;
-            continue;
-        }
+      // Cria o vetor esperado de arestas invertidas (volta)
+      auto reverseEdge = make_pair(edge.second, edge.first);
 
-        // Contar ocorrências totais (direta + inversa)
-        int totalCount = entry.second.size() + edgeMap[reverseEdge].size();
+      // Pular se já processamos esse par
+      if (processedEdges.count(edge) || processedEdges.count(reverseEdge)) continue;
+      
+      // Verificar aresta inversa
+      if (!edgeMap.count(reverseEdge)) {
+          errorMessage = "Aresta (" + to_string(edge.first+1) + "," +
+                        to_string(edge.second+1) + ") não tem correspondente inversa";
+          openMesh = true; // Aresta de ida não possui aresta de volta
+          continue;
+      }
 
-        if (totalCount != 2) {
-            errorMessage = "Aresta (" + to_string(edge.first+1) + "," +
-                         to_string(edge.second+1) + ") e sua inversa aparecem " +
-                         to_string(totalCount) + " vezes";
-            nonPlanar = true;
-        }
+      // Contar ocorrências totais (direta + inversa)
+      // entry.second.size() retorna o número de faces que contêm a aresta direcionada entry.first
+      int totalCount = entry.second.size() + edgeMap[reverseEdge].size();
 
-        processedEdges.insert(edge);
-        processedEdges.insert(reverseEdge);
-    }
+      if (totalCount != 2) {
+          errorMessage = "Aresta (" + to_string(edge.first+1) + "," +
+                      to_string(edge.second+1) + ") e sua inversa aparecem " +
+                      to_string(totalCount) + " vezes";
+          nonPlanar = true; // Aresta de ida tem mais de um correspondente de volta
+      }
 
-    // Verificar duplicatas na mesma face
-    for (const auto &entry : edgeMap) {
-        const auto &edge = entry.first;
-        const auto &face_indices = entry.second;
-        
-        if (face_indices.size() > 1) {
-            // Verificar se aparece mais de uma vez na mesma face
-            map<int, int> faceCount;
-            for (int face_idx : face_indices) {
-                faceCount[face_idx]++;
-                if (faceCount[face_idx] > 1) {
-                    errorMessage = "Aresta (" + to_string(edge.first+1) + "," +
-                                 to_string(edge.second+1) + ") aparece " +
-                                 to_string(faceCount[face_idx]) + " vezes na face " +
-                                 to_string(face_idx+1);
-                    return -2; // Código para não-subdivisão planar
-                }
-            }
-        }
-    }
+      // Processadas
+      processedEdges.insert(edge);
+      processedEdges.insert(reverseEdge);
+  }
 
-    if (nonPlanar) return -2; // Código para não-subdivisão planar
-    if (openMesh) return -1; // Código para malha aberta
+  // Verificar duplicatas na mesma face
+  for (const auto &entry : edgeMap) {
+      const auto &edge = entry.first;
+      const auto &face_indices = entry.second;
+      
+      if (face_indices.size() > 1) {
+          // Verificar se aparece mais de uma vez na mesma face
+          map<int, int> faceCount;
+          for (int face_idx : face_indices) {
+              faceCount[face_idx]++;
+              if (faceCount[face_idx] > 1) {
+                  errorMessage = "Aresta (" + to_string(edge.first+1) + "," +
+                              to_string(edge.second+1) + ") aparece " +
+                              to_string(faceCount[face_idx]) + " vezes na face " +
+                              to_string(face_idx+1);
+                  return -2; // Código para não-subdivisão planar
+              }
+          }
+      }
+  }
 
-    return 1; // Malha fechada e é subdivisão planar
+  if (nonPlanar) return -2; // Código para não-subdivisão planar
+  if (openMesh) return -1; // Código para malha aberta
+
+  return 1; // Malha fechada e é subdivisão planar
 }
 
+// ======================================================================================================================= //
+
+// Função que retorna a orientação entre duas arestas
 int orientation(const pair<int, int> &p, const pair<int, int> &q, const pair<int, int> &r) {
   long long val = 1LL * (q.second - p.second) * (r.first - q.first) -
                   1LL * (q.first - p.first) * (r.second - q.second);
   return (val == 0) ? 0 : (val > 0 ? 1 : 2); // 0: colinear, 1: horário, 2: anti-horário
 }
+
+// ======================================================================================================================= //
 
 // Verifica se ponto q está no segmento pr
 bool onSegment(const pair<int, int> &a, const pair<int, int> &b, const pair<int, int> &p) {
@@ -208,6 +230,8 @@ bool onSegment(const pair<int, int> &a, const pair<int, int> &b, const pair<int,
           (p.first - a.first) * (b.second - a.second)); // Produto vetorial == 0
 }
 
+// ======================================================================================================================= //
+
 // Função para calcular o produto vetorial entre três pontos (p1-p2) × (p3-p2)
 double crossProduct(const pair<int, int> &p1, const pair<int, int> &p2, const pair<int, int> &p3) {
   double x1 = p1.first - p2.first;   // Vetor p1-p2 (componente x)
@@ -217,6 +241,8 @@ double crossProduct(const pair<int, int> &p1, const pair<int, int> &p2, const pa
 
   return ((x1 * y2) - (y1 * x2));
 }
+
+// ======================================================================================================================= //
 
 // Verifica se os segmentos p1q1 e p2q2 se intersectam
 bool doSegmentsIntersect(const pair<int, int>& p1, const pair<int, int>& q1, const pair<int, int>& p2, const pair<int, int>& q2) {
@@ -237,6 +263,9 @@ bool doSegmentsIntersect(const pair<int, int>& p1, const pair<int, int>& q1, con
     return false;
 }
 
+// ======================================================================================================================= //
+
+// Verifica se há faces que se sobrepõe com base nas arestas de cada face
 bool isOverlapping(const vector<pair<int, int>> &verticesCoords, const vector<vector<int>> &faces, string &errorMessage) {
 
   // Verificar auto-intersecção em cada face
@@ -272,6 +301,10 @@ for (size_t faceIdx = 0; faceIdx < faces.size(); ++faceIdx) {
   return false;
 }
 
+// ======================================================================================================================= //
+
+// Verifica se a face está no sentido horário ou anti-horário
+// Usa o algoritmo de shoelace para determinar o sentido a partir da área (https://en.wikipedia.org/wiki/Shoelace_formula)
 bool isCounterClockwise(const vector<pair<int, int>>& face) {
     if (face.size() < 3) throw invalid_argument("Face inválida: menos de 3 vértices");
     
@@ -288,7 +321,7 @@ bool isCounterClockwise(const vector<pair<int, int>>& face) {
     return area < 0; // Área negativa = CCW (anti-horário)
 }
 
-// Funções de debug
+// ======================================================================================================================= //
 
 // Implementação da função debugPrintMesh para depuração da malha
 void debugPrintMesh(const vector<pair<int, int>> &verticesCoords, const vector<vector<int>> &faces) {
